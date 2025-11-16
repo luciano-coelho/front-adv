@@ -1,0 +1,163 @@
+{
+  "title": "API de Configurações de Segurança - Documentação para Backend",
+  "description": "Estrutura JSON esperada pelo frontend para a API de segurança (alteração de senha)",
+  
+  "endpoints": {
+    "PUT": {
+      "url": "/api/settings/security/change-password",
+      "method": "PUT",
+      "description": "Altera a senha do usuário autenticado",
+      "request_example": {
+        "currentPassword": "123456",
+        "newPassword": "teste123",
+        "confirmNewPassword": "teste123"
+      },
+      "response_example": {
+        "success": true,
+        "message": "Senha alterada com sucesso",
+        "data": {
+          "updatedAt": "2025-01-15T14:30:00.000Z",
+          "passwordChanged": true
+        }
+      }
+    },
+    
+    "GET_SECURITY_STATUS": {
+      "url": "/api/settings/security/status",
+      "method": "GET",
+      "description": "Retorna informações de segurança da conta (opcional para dashboard de segurança)",
+      "response_example": {
+        "success": true,
+        "data": {
+          "lastPasswordChange": "2025-01-01T10:30:00.000Z",
+          "passwordStrength": "strong",
+          "loginSessions": [
+            {
+              "id": "session_123",
+              "device": "Chrome - Windows",
+              "location": "São Paulo, SP",
+              "lastActivity": "2025-01-15T14:25:00.000Z",
+              "current": true
+            }
+          ],
+          "securityEvents": [
+            {
+              "type": "password_change",
+              "date": "2025-01-01T10:30:00.000Z",
+              "description": "Senha alterada com sucesso"
+            }
+          ]
+        }
+      }
+    }
+  },
+  
+  "field_specifications": {
+    "required_fields": [
+      "currentPassword",
+      "newPassword", 
+      "confirmNewPassword"
+    ],
+    
+    "field_formats": {
+      "currentPassword": "String - senha atual do usuário para validação",
+      "newPassword": "String - nova senha desejada pelo usuário",
+      "confirmNewPassword": "String - confirmação da nova senha (deve ser igual a newPassword)"
+    },
+    
+    "validation_rules": {
+      "currentPassword": "Deve corresponder à senha atual do usuário no banco de dados",
+      "newPassword": "Deve atender aos critérios de segurança (mínimo 8 caracteres, letras e números)",
+      "confirmNewPassword": "Deve ser exatamente igual ao campo newPassword",
+      "password_strength": "Recomendado validar força da senha (letras maiúsculas, minúsculas, números, símbolos)",
+      "rate_limiting": "Implementar limite de tentativas de alteração (ex: máximo 3 por hora)"
+    }
+  },
+  
+  "security_considerations": {
+    "password_hashing": "Nova senha deve ser hasheada com salt antes de salvar (bcrypt, scrypt, etc.)",
+    "current_password_verification": "Sempre verificar senha atual antes de permitir alteração",
+    "session_management": "Invalidar todas as sessões ativas após alteração de senha (exceto a atual)",
+    "audit_logging": "Registrar todas as tentativas de alteração de senha para auditoria",
+    "rate_limiting": "Implementar rate limiting para prevenir ataques de força bruta",
+    "password_history": "Opcionalmente, impedir reutilização das últimas N senhas",
+    "notification": "Enviar email de notificação sobre alteração de senha"
+  },
+  
+  "error_responses": {
+    "invalid_current_password": {
+      "success": false,
+      "error": "INVALID_CURRENT_PASSWORD",
+      "message": "A senha atual está incorreta"
+    },
+    
+    "weak_password": {
+      "success": false,
+      "error": "WEAK_PASSWORD", 
+      "message": "A nova senha não atende aos critérios de segurança",
+      "details": {
+        "requirements": [
+          "Mínimo 8 caracteres",
+          "Pelo menos uma letra maiúscula",
+          "Pelo menos uma letra minúscula", 
+          "Pelo menos um número",
+          "Pelo menos um caractere especial"
+        ]
+      }
+    },
+    
+    "password_mismatch": {
+      "success": false,
+      "error": "PASSWORD_MISMATCH",
+      "message": "A confirmação de senha não confere com a nova senha"
+    },
+    
+    "same_password": {
+      "success": false,
+      "error": "SAME_PASSWORD",
+      "message": "A nova senha deve ser diferente da atual"
+    },
+    
+    "rate_limit_exceeded": {
+      "success": false,
+      "error": "RATE_LIMIT_EXCEEDED",
+      "message": "Muitas tentativas de alteração de senha. Tente novamente em alguns minutos"
+    },
+    
+    "unauthorized": {
+      "success": false,
+      "error": "UNAUTHORIZED",
+      "message": "Token de autenticação inválido ou expirado"
+    }
+  },
+  
+  "frontend_validation": {
+    "client_side_checks": [
+      "Verificar se newPassword e confirmNewPassword são iguais",
+      "Validar força básica da senha (mínimo 8 caracteres)",
+      "Verificar se nova senha é diferente da atual (opcional)",
+      "Mostrar indicador de força da senha em tempo real"
+    ],
+    "user_experience": [
+      "Mostrar dialog de confirmação antes de enviar",
+      "Exibir loading durante a requisição",
+      "Feedback claro sobre sucesso ou erro",
+      "Limpar campos após sucesso"
+    ]
+  },
+  
+  "notes_for_backend": {
+    "authentication": "Requisições devem incluir token JWT válido no header Authorization",
+    "data_structure": "Frontend envia dados em estrutura flat simples (currentPassword, newPassword, confirmNewPassword)",
+    "password_validation": "Backend deve fazer validação dupla da senha atual",
+    "security_best_practices": "Usar bibliotecas estabelecidas para hash de senhas (bcrypt, scrypt)",
+    "session_invalidation": "Invalidar sessões ativas após alteração (exceto sessão atual)",
+    "audit_trail": "Manter log de todas as alterações de senha para auditoria",
+    "notification_system": "Enviar email/SMS de notificação sobre alteração",
+    "rate_limiting": "Implementar rate limiting por IP e por usuário",
+    "password_policies": "Configurar políticas de senha conforme necessidades da empresa",
+    "database_considerations": "Armazenar timestamp da última alteração para políticas de expiração",
+    "frontend_validation": "Frontend já valida se newPassword === confirmNewPassword antes de enviar",
+    "security_dialog": "Frontend mostra dialog de confirmação antes de processar alteração"
+  }
+}

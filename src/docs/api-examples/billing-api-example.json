@@ -1,0 +1,270 @@
+{
+  "title": "API de Configurações de Planos e Billing - Documentação para Backend",
+  "description": "Estrutura JSON esperada pelo frontend para a API de planos, pagamentos e billing",
+  
+  "endpoints": {
+    "GET_BILLING_INFO": {
+      "url": "/api/settings/billing/",
+      "method": "GET",
+      "description": "Retorna informações completas de billing do usuário",
+      "response_example": {
+        "success": true,
+        "data": {
+          "currentPlan": {
+            "plan": "Business board basic",
+            "status": "active",
+            "billingCycle": "monthly",
+            "nextPaymentDate": 1739132800,
+            "amount": 59.9
+          },
+          "paymentMethods": [
+            {
+              "cardId": "1",
+              "cardHolderName": "João Silva Santos",
+              "cardType": "VISA",
+              "expMonth": "12",
+              "expYear": "25",
+              "last4Number": "0392",
+              "primary": true
+            },
+            {
+              "cardId": "2",
+              "cardHolderName": "João Silva Santos",
+              "cardType": "MASTER",
+              "expMonth": "06",
+              "expYear": "25",
+              "last4Number": "8461",
+              "primary": false
+            }
+          ],
+          "transactionHistory": [
+            {
+              "id": "#36223",
+              "item": "Business board basic subscription",
+              "status": "paid",
+              "amount": 59.9,
+              "date": 1639132800
+            }
+          ]
+        }
+      }
+    },
+    
+    "ADD_PAYMENT_METHOD": {
+      "url": "/api/settings/billing/payment-methods",
+      "method": "POST", 
+      "description": "Adiciona um novo método de pagamento",
+      "request_example": {
+        "cardHolderName": "João Silva Santos",
+        "cardNumber": "4111111111111111",
+        "expMonth": "12",
+        "expYear": "25",
+        "cvv": "123",
+        "primary": false
+      },
+      "response_example": {
+        "success": true,
+        "message": "Cartão de crédito adicionado com sucesso",
+        "data": {
+          "cardId": "3",
+          "cardHolderName": "João Silva Santos",
+          "cardType": "VISA",
+          "expMonth": "12",
+          "expYear": "25",
+          "last4Number": "1111",
+          "primary": false
+        }
+      }
+    },
+    
+    "UPDATE_PAYMENT_METHOD": {
+      "url": "/api/settings/billing/payment-methods/:cardId",
+      "method": "PUT",
+      "description": "Atualiza um método de pagamento existente",
+      "request_example": {
+        "cardId": "1",
+        "cardHolderName": "João Silva Santos",
+        "expMonth": "12",
+        "expYear": "26",
+        "primary": true
+      },
+      "response_example": {
+        "success": true,
+        "message": "Cartão de crédito atualizado com sucesso",
+        "data": {
+          "cardId": "1",
+          "updatedAt": "2025-01-15T14:30:00.000Z"
+        }
+      }
+    },
+    
+    "DELETE_PAYMENT_METHOD": {
+      "url": "/api/settings/billing/payment-methods/:cardId",
+      "method": "DELETE",
+      "description": "Remove um método de pagamento",
+      "response_example": {
+        "success": true,
+        "message": "Cartão de crédito removido com sucesso"
+      }
+    },
+    
+    "CHANGE_PLAN": {
+      "url": "/api/settings/billing/change-plan",
+      "method": "POST",
+      "description": "Altera o plano de assinatura do usuário",
+      "request_example": {
+        "planId": "standard",
+        "billingCycle": "monthly",
+        "paymentMethodId": "1"
+      },
+      "response_example": {
+        "success": true,
+        "message": "Plano alterado com sucesso",
+        "data": {
+          "newPlan": {
+            "plan": "Standard",
+            "status": "active", 
+            "billingCycle": "monthly",
+            "nextPaymentDate": 1739132800,
+            "amount": 79.9
+          }
+        }
+      }
+    }
+  },
+  
+  "field_specifications": {
+    "payment_method_fields": {
+      "required_fields": [
+        "cardHolderName",
+        "cardNumber",
+        "expMonth", 
+        "expYear",
+        "cvv"
+      ],
+      "optional_fields": [
+        "primary"
+      ],
+      "field_formats": {
+        "cardHolderName": "String - Nome como aparece no cartão",
+        "cardNumber": "String - Número do cartão (16 dígitos)",
+        "expMonth": "String - Mês de expiração (01-12)",
+        "expYear": "String - Ano de expiração (YY format)",
+        "cvv": "String - Código de segurança (3-4 dígitos)",
+        "primary": "Boolean - Se é o cartão principal"
+      }
+    },
+    
+    "billing_data_formats": {
+      "amount": "Number - Valor em reais (59.9 para R$ 59,90)",
+      "date": "Unix timestamp - Data em formato timestamp",
+      "status": "String - active, inactive, cancelled, suspended",
+      "billingCycle": "String - monthly, annually",
+      "cardType": "String - VISA, MASTER, AMEX, ELO, etc",
+      "last4Number": "String - Últimos 4 dígitos do cartão"
+    }
+  },
+  
+  "validation_rules": {
+    "payment_methods": {
+      "cardNumber": "Deve ser um número de cartão válido (Luhn algorithm)",
+      "expMonth": "Deve ser entre 01-12",
+      "expYear": "Deve ser maior que ano atual",
+      "cvv": "3 dígitos para Visa/Master, 4 para Amex",
+      "cardHolderName": "Mínimo 2 palavras, máximo 50 caracteres",
+      "primary_card": "Apenas um cartão pode ser primary por usuário"
+    },
+    
+    "business_rules": {
+      "plan_change": "Deve validar se usuário pode alterar para o plano solicitado",
+      "payment_processing": "Integrar com gateway de pagamento brasileiro",
+      "billing_cycle": "Calcular próxima data de cobrança corretamente",
+      "card_deletion": "Não permitir deletar cartão primary se for o único"
+    }
+  },
+  
+  "brazilian_payment_considerations": {
+    "card_brands": [
+      "VISA",
+      "MASTERCARD", 
+      "ELO",
+      "AMEX",
+      "HIPERCARD",
+      "DINERS"
+    ],
+    "payment_gateways": [
+      "PagSeguro",
+      "Mercado Pago",
+      "Cielo",
+      "Rede",
+      "Stone",
+      "GetNet"
+    ],
+    "currency": "BRL - Real Brasileiro",
+    "tax_considerations": "Incluir impostos brasileiros nos cálculos",
+    "pix_integration": "Considerar PIX como método de pagamento futuro"
+  },
+  
+  "error_responses": {
+    "invalid_card": {
+      "success": false,
+      "error": "INVALID_CARD",
+      "message": "Dados do cartão inválidos",
+      "details": {
+        "cardNumber": ["Número do cartão inválido"],
+        "expMonth": ["Mês de expiração inválido"]
+      }
+    },
+    
+    "expired_card": {
+      "success": false,
+      "error": "EXPIRED_CARD",
+      "message": "Cartão de crédito expirado"
+    },
+    
+    "payment_failed": {
+      "success": false,
+      "error": "PAYMENT_FAILED",
+      "message": "Falha no processamento do pagamento",
+      "details": {
+        "gateway_error": "Cartão recusado pela operadora"
+      }
+    },
+    
+    "plan_not_found": {
+      "success": false,
+      "error": "PLAN_NOT_FOUND",
+      "message": "Plano solicitado não encontrado"
+    },
+    
+    "insufficient_permissions": {
+      "success": false,
+      "error": "INSUFFICIENT_PERMISSIONS",
+      "message": "Usuário não tem permissão para alterar plano"
+    }
+  },
+  
+  "security_considerations": {
+    "pci_compliance": "Seguir padrões PCI DSS para armazenamento de dados de cartão",
+    "card_tokenization": "Usar tokenização para armazenar cartões com segurança",
+    "cvv_handling": "Nunca armazenar CVV no banco de dados",
+    "encryption": "Criptografar dados sensíveis de pagamento",
+    "audit_logging": "Registrar todas as transações para auditoria",
+    "fraud_detection": "Implementar detecção de fraudes básica"
+  },
+  
+  "notes_for_backend": {
+    "authentication": "Todas as requisições devem incluir token JWT válido",
+    "payment_gateway": "Integrar com gateway brasileiro (PagSeguro, Mercado Pago, etc)",
+    "card_storage": "Usar tokenização para segurança dos dados de cartão",
+    "billing_logic": "Implementar lógica de cobrança recorrente automática", 
+    "webhook_handling": "Configurar webhooks do gateway para status de pagamento",
+    "currency_formatting": "Frontend exibe valores em formato brasileiro (R$ 59,90)",
+    "date_handling": "Timestamps Unix para datas, frontend converte para local",
+    "plan_limits": "Implementar verificação de limites por plano",
+    "downgrade_policy": "Definir política para downgrade de planos",
+    "cancellation_flow": "Implementar fluxo de cancelamento de assinatura",
+    "invoice_generation": "Gerar notas fiscais brasileiras quando necessário",
+    "tax_calculation": "Calcular impostos brasileiros corretamente"
+  }
+}

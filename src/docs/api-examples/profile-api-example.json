@@ -1,0 +1,185 @@
+{
+  "title": "API de Perfil Administrativo - Documentação para Backend",
+  "description": "Estrutura JSON esperada pelo frontend para a API de perfil do sistema jurídico",
+  
+  "endpoints": {
+    "GET": {
+      "url": "/api/settings/profile/",
+      "method": "GET",
+      "description": "Retorna os dados do perfil administrativo atual",
+      "response_example": {
+        "success": true,
+        "data": {
+          "fullName": "Dr. João Silva Santos",
+          "email": "joao.silva@escritorio.com.br",
+          "dialCode": "+55",
+          "phoneNumber": "(11) 99999-9999",
+          "position": "socio_administrador",
+          "oabNumber": "123456",
+          "oabState": "SP",
+          "oabStatus": "ativo",
+          "cpf": "123.456.789-00",
+          "img": "/uploads/profiles/joao-silva.jpg",
+          "officeName": "Silva & Associados Advocacia",
+          "companyName": "Silva & Associados Sociedade de Advogados S/S",
+          "cnpj": "12.345.678/0001-90",
+          "address": "Rua das Flores, 123, Conjunto 456",
+          "city": "São Paulo",
+          "state": "SP",
+          "postcode": "01234-567",
+          "officePhone": "(11) 3333-4444",
+          "officeEmail": "contato@silvaassociados.com.br",
+          "website": "https://www.silvaassociados.com.br",
+          "socialMedia": "@silvaassociadosadvocacia",
+          "acceptTerms": true,
+          "acceptedAt": "2025-01-15T10:30:00.000Z",
+          "termsVersion": "v2.1",
+          "metadata": {
+            "createdAt": "2025-01-01T08:00:00.000Z",
+            "updatedAt": "2025-01-15T10:30:00.000Z",
+            "profileComplete": true,
+            "verificationStatus": "verified"
+          }
+        }
+      }
+    },
+    
+    "PUT": {
+      "url": "/api/settings/profile/",
+      "method": "PUT",
+      "description": "Atualiza os dados do perfil administrativo",
+      "request_example": {
+        "fullName": "Dr. João Silva Santos",
+        "email": "joao.silva@escritorio.com.br",
+        "dialCode": "+55",
+        "phoneNumber": "(11) 99999-9999",
+        "position": "socio_administrador",
+        "oabNumber": "123456",
+        "oabState": "SP",
+        "oabStatus": "ativo",
+        "cpf": "123.456.789-00",
+        "img": "blob:http://localhost:5173/uuid-generated-by-frontend",
+        "officeName": "Silva & Associados Advocacia",
+        "companyName": "Silva & Associados Sociedade de Advogados S/S",
+        "cnpj": "12.345.678/0001-90",
+        "address": "Rua das Flores, 123, Conjunto 456",
+        "city": "São Paulo",
+        "state": "SP",
+        "postcode": "01234-567",
+        "officePhone": "(11) 3333-4444",
+        "officeEmail": "contato@silvaassociados.com.br",
+        "website": "https://www.silvaassociados.com.br",
+        "socialMedia": "@silvaassociadosadvocacia",
+        "acceptTerms": true
+      },
+      "response_example": {
+        "success": true,
+        "message": "Perfil atualizado com sucesso",
+        "data": {
+          "id": "user_123",
+          "updatedAt": "2025-01-15T14:30:00.000Z"
+        }
+      }
+    }
+  },
+  
+  "field_specifications": {
+    "required_fields": [
+      "fullName",
+      "email", 
+      "dialCode",
+      "phoneNumber",
+      "position",
+      "oabNumber",
+      "oabState", 
+      "oabStatus",
+      "acceptTerms"
+    ],
+    
+    "optional_fields": [
+      "cpf",
+      "img",
+      "officeName",
+      "companyName", 
+      "cnpj",
+      "address",
+      "city",
+      "state",
+      "postcode",
+      "officePhone",
+      "officeEmail",
+      "website",
+      "socialMedia"
+    ],
+    
+    "field_formats": {
+      "dialCode": "String com código do país (+55 para Brasil)",
+      "phoneNumber": "String formatada como (48) 99999-9999",
+      "position": "String com valores: socio_administrador, advogado_senior, advogado_junior, etc",
+      "oabStatus": "String com valores: ativo, suspenso, licenciado",
+      "cpf": "String formatada como 083.736.689-50 ou vazio",
+      "cnpj": "String formatada como 71.836.466/0001-70 ou vazio", 
+      "postcode": "String formatada como 88113-240 ou vazio",
+      "oabNumber": "String com 6 dígitos numéricos (065072)",
+      "img": "Blob URL durante upload, convertido para caminho de arquivo pelo backend",
+      "email": "Email válido em formato string",
+      "website": "URL válida começando com http:// ou https://",
+      "acceptTerms": "Boolean - deve ser true para aceitar"
+    },
+    
+    "validation_rules": {
+      "email": "Deve ser um email válido e único no sistema",
+      "oabNumber": "Deve ter exatamente 6 dígitos numéricos",
+      "oabState": "Deve ser uma sigla de estado válida (SP, RJ, MG, etc.)",
+      "dialCode": "Deve começar com + seguido do código do país",
+      "phoneNumber": "Deve seguir formato brasileiro com DDD",
+      "cpf": "Se preenchido, deve ser um CPF válido",
+      "cnpj": "Se preenchido, deve ser um CNPJ válido",
+      "acceptTerms": "Obrigatório ser true para completar o cadastro"
+    }
+  },
+  
+  "error_responses": {
+    "validation_error": {
+      "success": false,
+      "error": "VALIDATION_ERROR",
+      "message": "Dados inválidos fornecidos",
+      "details": {
+        "email": ["Email deve ter formato válido"],
+        "oabNumber": ["Número da OAB deve ter 6 dígitos"],
+        "acceptTerms": ["Você deve aceitar os termos de uso para continuar"]
+      }
+    },
+    
+    "duplicate_email": {
+      "success": false,
+      "error": "DUPLICATE_EMAIL", 
+      "message": "Este email já está em uso por outro usuário"
+    },
+    
+    "unauthorized": {
+      "success": false,
+      "error": "UNAUTHORIZED",
+      "message": "Token de autenticação inválido ou expirado"
+    },
+    
+    "server_error": {
+      "success": false,
+      "error": "INTERNAL_ERROR",
+      "message": "Erro interno do servidor"
+    }
+  },
+  
+  "notes_for_backend": {
+    "authentication": "Todas as requisições devem incluir token JWT no header Authorization",
+    "file_upload": "Campo 'img' vem como blob URL do frontend, backend deve processar upload e retornar caminho final",
+    "data_structure": "Frontend envia dados em estrutura 'flat' (não agrupados), backend pode reorganizar internamente se necessário",
+    "data_sanitization": "Backend deve sanitizar e validar todos os dados antes de salvar",
+    "masks_handling": "Frontend envia dados já formatados com máscaras, backend pode remover formatação se necessário",
+    "brazilian_standards": "Seguir padrões brasileiros para CPF, CNPJ, CEP e telefone",
+    "terms_tracking": "Importante registrar quando e qual versão dos termos foi aceita",
+    "position_values": "Campo position usa valores específicos do select (socio_administrador, etc)",
+    "oab_status_values": "Campo oabStatus usa valores específicos (ativo, suspenso, licenciado)",
+    "state_codes": "Estados brasileiros são enviados como códigos de 2 letras (SC, SP, RJ, etc)"
+  }
+}

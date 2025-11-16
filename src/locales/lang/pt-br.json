@@ -1,0 +1,215 @@
+{
+    "nav": {
+        "dashboard": {
+            "dashboard": "Painel",
+            "ecommerce": "E-commerce",
+            "analytic": "Analítico",
+            "project": "Projeto",
+            "marketing": "Marketing"
+        },
+        "concepts": "Conceitos",
+        "conceptsAi": {
+            "ai": "IA",
+            "chat": "Chat",
+            "image": "Imagem"
+        },
+        "conceptsCustomers": {
+            "customers": "Cliente",
+            "customerList": "Lista",
+            "customerEdit": "Editar",
+            "customerCreate": "Criar",
+            "customerDetails": "Detalhes"
+        },
+        "conceptsProducts": {
+            "scrumBoard": "Quadro Scrum",
+            "products": "Produtos",
+            "productList": "Lista",
+            "productEdit": "Editar",
+            "productCreate": "Criar"
+        },
+        "conceptsProjects": {
+            "projects": "Projetos",
+            "projectList": "Lista",
+            "projectDetails": "Detalhes",
+            "projectTasks": "Tarefas",
+            "projectIssue": "Problema"
+        },
+        "conceptsOrders": {
+            "orders": "Pedidos",
+            "orderList": "Lista",
+            "orderEdit": "Editar",
+            "orderDetails": "Detalhes",
+            "orderCreate": "Criar"
+        },
+        "conceptsAccount": {
+            "account": "Conta",
+            "settings": "Configurações",
+            "activityLog": "Log de atividade",
+            "pricing": "Preços",
+            "rolesPermissions": "Funções e Permissões"
+        },
+        "conceptsHelpCenter": {
+            "helpCenter": "Centro de Ajuda",
+            "supportHub": "Hub de Suporte",
+            "article": "Artigo",
+            "editArticle": "Editar Artigo",
+            "manageArticle": "Gerenciar Artigo",
+            "faq": "Perguntas Frequentes"
+        },
+        "calendar": "Calendário",
+        "fileManager": "Gerenciador de Arquivos",
+        "mail": "Email",
+        "chat": "Chat",
+        "uiComponents": "Componentes UI",
+        "uiComponentsCommon": {
+            "common": "Comum",
+            "grid": "Grade",
+            "button": "Botão",
+            "typography": "Tipografia",
+            "icons": "Ícones"
+        },
+        "uiComponentsFeedback": {
+            "feedback": "Feedback",
+            "alert": "Alerta",
+            "dialog": "Diálogo",
+            "drawer": "Gaveta",
+            "progress": "Progresso",
+            "skeleton": "Skeleton",
+            "spinner": "Carregamento",
+            "toast": "Notificação"
+        },
+        "uiComponentsDataDisplay": {
+            "dataDisplay": "Exibição de Dados",
+            "avatar": "Avatar",
+            "badge": "Distintivo",
+            "calendar": "Calendário",
+            "cards": "Cartões",
+            "table": "Tabela",
+            "tag": "Tag",
+            "timeline": "Linha do Tempo",
+            "tooltip": "Dica"
+        },
+        "uiComponentsForms": {
+            "forms": "Formulários",
+            "checkbox": "Checkbox",
+            "datePicker": "Seletor de Data",
+            "formControl": "Controle de Formulário",
+            "input": "Campo de Entrada",
+            "inputGroup": "Grupo de Entrada",
+            "radio": "Radio",
+            "segment": "Segmento",
+            "select": "Seleção",
+            "switcher": "Interruptor",
+            "timeInput": "Entrada de Hora",
+            "upload": "Upload"
+        },
+        "uiComponentsNavigation": {
+            "navigation": "Navegação",
+            "dropdown": "Dropdown",
+            "menu": "Menu",
+            "pagination": "Paginação",
+            "steps": "Etapas",
+            "tabs": "Abas"
+        },
+        "uiComponentsGraph": {
+            "graph": "Gráfico",
+            "charts": "Gráficos",
+            "maps": "Mapas"
+        },
+        "pages": {
+            "pages": "Páginas",
+            "welcome": "Bem-vindo",
+            "accessDenied": "Acesso Negado"
+        },
+        "authentication": {
+            "authentication": "Autenticação",
+            "signIn": "Entrar",
+            "signInSimple": "Simples",
+            "signInSide": "Lateral",
+            "signInSplit": "Dividido",
+            "signUp": "Cadastrar",
+            "signUpSimple": "Simples",
+            "signUpSide": "Lateral",
+            "signUpSplit": "Dividido",
+            "forgotPassword": "Esqueci a Senha",
+            "forgotPasswordSimple": "Simples",
+            "forgotPasswordSide": "Lateral",
+            "forgotPasswordSplit": "Dividido",
+            "resetPassword": "Redefinir Senha",
+            "resetPasswordSimple": "Simples",
+            "resetPasswordSide": "Lateral",
+            "resetPasswordSplit": "Dividido",
+            "otpVerification": "Verificação OTP",
+            "otpVerificationSimple": "Simples",
+            "otpVerificationSide": "Lateral",
+            "otpVerificationSplit": "Dividido"
+        },
+        "others": {
+            "others": "Outros",
+            "accessDenied": "Acesso Negado",
+            "accessDeniedDesc": "Página de acesso negado",
+            "landing": "Landing",
+            "landingDesc": "Página de landing"
+        },
+        "guide": {
+            "guide": "Guia",
+            "documentation": "Documentação",
+            "sharedComponentDoc": "Componente Compartilhado",
+            "utilsDoc": "Utilitários",
+            "changeLog": "Histórico de Alterações"
+        }
+    },
+    "auth": {
+        "welcomeBack": "Bem-vindo de volta!",
+        "enterCredentials": "Por favor, digite suas credenciais para entrar!",
+        "forgotPassword": "Esqueci a senha",
+        "orContinueWith": "ou continue com",
+        "dontHaveAccount": "Ainda não tem uma conta?",
+        "signUp": "Cadastre-se",
+        "signIn": "Entrar",
+        "email": "Email",
+        "password": "Senha",
+        "enterEmail": "Por favor, digite seu email",
+        "enterPassword": "Por favor, digite sua senha",
+        "signingIn": "Entrando...",
+        "rememberMe": "Lembrar de mim",
+        "signInWithGoogle": "Entrar com Google",
+        "signInWithGithub": "Entrar com Github"
+    },
+    "dashboard": {
+        "totalProfit": "Lucro Total",
+        "totalOrder": "Total de Pedidos",
+        "impression": "Impressões",
+        "salesTarget": "Meta de Vendas",
+        "topProduct": "Melhores Produtos",
+        "monthly": "Mensal",
+        "weekly": "Semanal",
+        "yearly": "Anual",
+        "overview": "Visão Geral",
+        "selectPeriod": "Selecionar período",
+        "fromLastMonth": "do mês passado",
+        "madeThisMonthYear": "Feito este mês/ano",
+        "units": "Unidades",
+        "viewAll": "Ver Todos",
+        "sold": "Vendido"
+    },
+    "common": {
+        "welcome": "Bem-vindo",
+        "loading": "Carregando...",
+        "error": "Erro",
+        "success": "Sucesso",
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "edit": "Editar",
+        "delete": "Excluir",
+        "create": "Criar",
+        "update": "Atualizar",
+        "search": "Pesquisar",
+        "filter": "Filtrar",
+        "submit": "Enviar",
+        "back": "Voltar",
+        "next": "Próximo",
+        "previous": "Anterior",
+        "finish": "Finalizar"
+    }
+}
