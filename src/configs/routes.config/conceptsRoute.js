@@ -56,7 +56,7 @@ const conceptsRoute = [
         authority: [ADMIN, USER],
         meta: {
             header: {
-                title: 'Cadastrar cliente',
+                title: 'Cadastro de cliente',
                 description:
                     'Manage customer details, track purchases, and update preferences easily.',
                 contained: true,

@@ -1,35 +1,68 @@
-import { useMemo } from 'react'
-import Avatar from '@/components/ui/Avatar'
+import { useMemo, useState } from 'react'
 import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
 import useCustomerList from '../hooks/useCustomerList'
 import { Link, useNavigate } from 'react-router'
 import cloneDeep from 'lodash/cloneDeep'
-import { TbPencil, TbEye } from 'react-icons/tb'
+import { TbPencil, TbEye, TbEye as TbEyeOpen, TbEyeOff } from 'react-icons/tb'
+import { HiMail, HiPhone } from 'react-icons/hi'
 
 const statusColor = {
-    active: 'bg-emerald-200 dark:bg-emerald-200 text-gray-900 dark:text-gray-900',
-    blocked: 'bg-red-200 dark:bg-red-200 text-gray-900 dark:text-gray-900',
+    ativo: 'bg-emerald-500 text-white',
+    inativo: 'bg-red-500 text-white',
+    'em-atendimento': 'bg-orange-500 text-white',
+    prospectado: 'bg-yellow-500 text-black',
+}
+
+const PersonTypeColumn = ({ personType }) => {
+    return (
+        <div className="flex items-center">
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                personType === 'fisica' 
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'bg-orange-100 text-orange-700'
+            }`}>
+                {personType === 'fisica' ? 'PF' : 'PJ'}
+            </span>
+        </div>
+    )
 }
 
 const NameColumn = ({ row }) => {
     return (
-        <div className="flex items-center">
-            <Avatar size={40} shape="circle" src={row.img} />
-            <Link
-                className={`hover:text-primary ml-2 rtl:mr-2 font-semibold text-gray-900 dark:text-gray-100`}
-                to={`/concepts/customers/customer-details/${row.id}`}
-            >
-                {row.name}
-            </Link>
+        <Link
+            className={`hover:text-primary font-semibold text-gray-900 dark:text-gray-100`}
+            to={`/concepts/customers/customer-details/${row.id}`}
+        >
+            {row.firstName}
+        </Link>
+    )
+}
+
+const SecurityKeywordColumn = ({ keyword }) => {
+    const [showKeyword, setShowKeyword] = useState(false)
+    
+    return (
+        <div className="flex items-center gap-2">
+            <span className="text-gray-600 font-mono text-sm">
+                {showKeyword ? keyword : '••••••••'}
+            </span>
+            <Tooltip title={showKeyword ? 'Ocultar palavra chave' : 'Exibir palavra chave'}>
+                <button
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                    onClick={() => setShowKeyword(!showKeyword)}
+                >
+                    {showKeyword ? <TbEyeOff className="text-lg" /> : <TbEyeOpen className="text-lg" />}
+                </button>
+            </Tooltip>
         </div>
     )
 }
 
 const ActionColumn = ({ onEdit, onViewDetail }) => {
     return (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 justify-end">
             <Tooltip title="Editar">
                 <div
                     className={`text-xl cursor-pointer select-none font-semibold`}
@@ -66,8 +99,9 @@ const CustomerListTable = () => {
         selectedCustomer,
     } = useCustomerList()
 
+
     const handleEdit = (customer) => {
-        navigate(`/concepts/customers/customer-edit/${customer.id}`)
+        navigate('/concepts/customers/customer-create', { state: { customer } })
     }
 
     const handleViewDetails = (customer) => {
@@ -77,8 +111,18 @@ const CustomerListTable = () => {
     const columns = useMemo(
         () => [
             {
+                header: 'Tipo',
+                accessorKey: 'personType',
+                size: 70, // Suficiente para 'Tipo'
+                cell: (props) => {
+                    const row = props.row.original
+                    return <PersonTypeColumn personType={row.personType} />
+                },
+            },
+            {
                 header: 'Nome',
-                accessorKey: 'name',
+                accessorKey: 'firstName',
+                size: 140, // Suficiente para 'Nome'
                 cell: (props) => {
                     const row = props.row.original
                     return <NameColumn row={row} />
@@ -87,21 +131,71 @@ const CustomerListTable = () => {
             {
                 header: 'E-mail',
                 accessorKey: 'email',
-            },
-            {
-                header: 'Localização',
-                accessorKey: 'personalInfo.location',
-            },
-            {
-                header: 'Status',
-                accessorKey: 'status',
+                size: 120, // Suficiente para 'E-mail'
                 cell: (props) => {
                     const row = props.row.original
+                    const email = row.email
+                    const isPreferred = row.primaryContact === 'email'
+                    return (
+                        <div className="flex items-center gap-2">
+                            <span className="truncate" title={email}>
+                                {email}
+                            </span>
+                            {isPreferred && (
+                                <Tooltip title="Considere entrar em contato por E-mail">
+                                    <HiMail className="text-blue-600 text-lg flex-shrink-0" />
+                                </Tooltip>
+                            )}
+                        </div>
+                    )
+                },
+            },
+            {
+                header: 'Celular/WhatsApp',
+                accessorKey: 'phoneNumber',
+                size: 160, // Suficiente para 'Celular/WhatsApp'
+                cell: (props) => {
+                    const row = props.row.original
+                    const phoneNumber = row.phoneNumber
+                    const isPreferred = row.primaryContact === 'whatsapp'
+                    return (
+                        <div className="flex items-center gap-2">
+                            <span>{phoneNumber}</span>
+                            {isPreferred && (
+                                <Tooltip title="Considere entrar em contato por WhatsApp">
+                                    <HiPhone className="text-green-600 text-lg flex-shrink-0" />
+                                </Tooltip>
+                            )}
+                        </div>
+                    )
+                },
+            },
+            {
+                header: 'Palavra Chave',
+                accessorKey: 'securityKeyword',
+                size: 120, // Suficiente para 'Palavra Chave'
+                cell: (props) => {
+                    const keyword = props.row.original.securityKeyword
+                    return <SecurityKeywordColumn keyword={keyword} />
+                },
+            },
+            {
+                header: 'Situação',
+                accessorKey: 'clientStatus',
+                size: 110, // Suficiente para 'Situação'
+                cell: (props) => {
+                    const status = props.row.original.clientStatus
+                    const statusLabels = {
+                        ativo: 'Ativo',
+                        inativo: 'Inativo', 
+                        'em-atendimento': 'Em Atendimento',
+                        prospectado: 'Prospectado'
+                    }
                     return (
                         <div className="flex items-center">
-                            <Tag className={statusColor[row.status]}>
-                                <span className="capitalize">
-                                    {row.status === 'active' ? 'Ativo' : 'Bloqueado'}
+                            <Tag className={statusColor[status]}>
+                                <span>
+                                    {statusLabels[status] || status}
                                 </span>
                             </Tag>
                         </div>
@@ -109,15 +203,9 @@ const CustomerListTable = () => {
                 },
             },
             {
-                header: 'Gasto Total',
-                accessorKey: 'totalSpending',
-                cell: (props) => {
-                    return <span>R$ {props.row.original.totalSpending}</span>
-                },
-            },
-            {
                 header: '',
                 id: 'action',
+                size: 80,
                 cell: (props) => (
                     <ActionColumn
                         onEdit={() => handleEdit(props.row.original)}

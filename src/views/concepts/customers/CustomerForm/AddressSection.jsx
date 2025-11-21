@@ -34,7 +34,7 @@ const brazilStates = [
     { value: 'TO', label: 'Tocantins' }
 ]
 
-const AddressSection = ({ control, errors }) => {
+const AddressSection = ({ control, errors, viewMode }) => {
     const formatCEP = (value) => {
         if (!value) return ''
         const numbers = value.replace(/\D/g, '')
@@ -54,47 +54,31 @@ const AddressSection = ({ control, errors }) => {
 
     return (
         <Card>
-            <h4 className="mb-10">Informações de Endereço</h4>
-            <FormItem
-                label="Estado"
-                invalid={Boolean(errors.state)}
-                errorMessage={errors.state?.message}
-            >
-                <Controller
-                    name="state"
-                    control={control}
-                    render={({ field }) => (
-                        <Select
-                            options={brazilStates}
-                            {...field}
-                            placeholder="Selecione o Estado"
-                            value={brazilStates.filter(
-                                (option) => option.value === field.value,
-                            )}
-                            onChange={(option) => field.onChange(option?.value)}
-                        />
-                    )}
-                />
-            </FormItem>
-            <FormItem
-                label="Endereço"
-                invalid={Boolean(errors.address)}
-                errorMessage={errors.address?.message}
-            >
-                <Controller
-                    name="address"
-                    control={control}
-                    render={({ field }) => (
-                        <Input
-                            type="text"
-                            autoComplete="off"
-                            placeholder="Rua, número, complemento"
-                            {...field}
-                        />
-                    )}
-                />
-            </FormItem>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h4 className="mb-6">Endereço</h4>
+            
+            {/* Linha 1: Estado e Cidade */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <FormItem
+                    label="Estado"
+                    invalid={Boolean(errors.state)}
+                    errorMessage={errors.state?.message}
+                >
+                    <Controller
+                        name="state"
+                        control={control}
+                        render={({ field }) => (
+                            <Select
+                                options={brazilStates}
+                                {...field}
+                                placeholder="Selecione o Estado"
+                                value={brazilStates.find(option => option.value === field.value)}
+                                isDisabled={viewMode}
+                                onChange={(option) => field.onChange(option?.value)}
+                            />
+                        )}
+                    />
+                </FormItem>
+                
                 <FormItem
                     label="Cidade"
                     invalid={Boolean(errors.city)}
@@ -107,14 +91,19 @@ const AddressSection = ({ control, errors }) => {
                             <Input
                                 type="text"
                                 autoComplete="off"
-                                placeholder="Cidade"
+                                placeholder="Nome da cidade"
                                 value={validateCity(field.value || '')}
+                                disabled={viewMode}
                                 onChange={(e) => field.onChange(e.target.value)}
                                 onBlur={field.onBlur}
                             />
                         )}
                     />
                 </FormItem>
+            </div>
+
+            {/* Linha 2: CEP e Bairro */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 <FormItem
                     label="CEP"
                     invalid={Boolean(errors.postcode)}
@@ -129,8 +118,97 @@ const AddressSection = ({ control, errors }) => {
                                 autoComplete="off"
                                 placeholder="12345-678"
                                 value={formatCEP(field.value || '')}
+                                disabled={viewMode}
                                 onChange={(e) => field.onChange(e.target.value)}
                                 onBlur={field.onBlur}
+                            />
+                        )}
+                    />
+                </FormItem>
+                
+                <FormItem
+                    label="Bairro"
+                    invalid={Boolean(errors.neighborhood)}
+                    errorMessage={errors.neighborhood?.message}
+                >
+                    <Controller
+                        name="neighborhood"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Nome do bairro"
+                                {...field}
+                                disabled={viewMode}
+                            />
+                        )}
+                    />
+                </FormItem>
+            </div>
+
+            {/* Linha 3: Logradouro, Número e Complemento */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                <div className="md:col-span-2">
+                    <FormItem
+                        label="Logradouro"
+                        invalid={Boolean(errors.address)}
+                        errorMessage={errors.address?.message}
+                    >
+                        <Controller
+                            name="address"
+                            control={control}
+                            render={({ field }) => (
+                                <Input
+                                    type="text"
+                                    autoComplete="off"
+                                    placeholder="Rua, Avenida, Travessa..."
+                                    {...field}
+                                    disabled={viewMode}
+                                />
+                            )}
+                        />
+                    </FormItem>
+                </div>
+                
+                <FormItem
+                    label="Número"
+                    invalid={Boolean(errors.number)}
+                    errorMessage={errors.number?.message}
+                >
+                    <Controller
+                        name="number"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Nº"
+                                {...field}
+                                disabled={viewMode}
+                            />
+                        )}
+                    />
+                </FormItem>
+            </div>
+
+            {/* Linha 4: Complemento (campo único, mais largo) */}
+            <div className="mt-4">
+                <FormItem
+                    label="Complemento"
+                    invalid={Boolean(errors.complement)}
+                    errorMessage={errors.complement?.message}
+                >
+                    <Controller
+                        name="complement"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                type="text"
+                                autoComplete="off"
+                                placeholder="Apartamento, Bloco, Casa, etc. (opcional)"
+                                {...field}
+                                disabled={viewMode}
                             />
                         )}
                     />

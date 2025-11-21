@@ -8,13 +8,15 @@ import { apiGetCustomer } from '@/services/CustomersService'
 import CustomerForm from '../CustomerForm'
 import sleep from '@/utils/sleep'
 import NoUserFound from '@/assets/svg/NoUserFound'
-import { TbTrash, TbArrowNarrowLeft } from 'react-icons/tb'
-import { useParams, useNavigate } from 'react-router'
+import { TbTrash, TbArrowNarrowLeft, TbEdit } from 'react-icons/tb'
+import { useParams, useNavigate, useSearchParams } from 'react-router'
 import useSWR from 'swr'
 
 const CustomerEdit = () => {
     const { id } = useParams()
-
+    const [searchParams] = useSearchParams()
+    const isViewMode = searchParams.get('view') === 'true'
+    
     const navigate = useNavigate()
 
     const { data, isLoading } = useSWR(
@@ -29,6 +31,12 @@ const CustomerEdit = () => {
 
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [isSubmiting, setIsSubmiting] = useState(false)
+    const [viewMode, setViewMode] = useState(isViewMode)
+
+    const handleEdit = () => {
+        setViewMode(false)
+        // Não remove o parâmetro view da URL, apenas altera o estado interno
+    }
 
     const handleFormSubmit = async (values) => {
         console.log('Submitted values', values)
@@ -43,19 +51,32 @@ const CustomerEdit = () => {
 
     const getDefaultValues = () => {
         if (data) {
-            const { firstName, lastName, email, personalInfo } = data
-
+            // Converte dados do mock para o formato do form
             return {
-                firstName,
-                lastName,
-                email,
-                phoneNumber: personalInfo.phoneNumber,
-                dialCode: personalInfo.dialCode,
-                state: personalInfo.state || 'SP', // Default para São Paulo
-                address: personalInfo.address,
-                city: personalInfo.city,
-                postcode: personalInfo.postcode,
-                tags: [],
+                personType: data.personalInfo?.personType || 'fisica',
+                firstName: data.name,
+                document: data.personalInfo?.document || '',
+                birthDate: data.personalInfo?.birthday ? new Date(data.personalInfo.birthday.split('/').reverse().join('-')) : undefined,
+                email: data.email,
+                phoneNumber: data.personalInfo?.phoneNumber || '',
+                primaryContact: data.personalInfo?.primaryContact || 'email',
+                internalResponsible: 'Dr. João Silva', // Default
+                securityKeyword: data.personalInfo?.securityKeyword || '',
+                state: data.personalInfo?.location?.split(', ')[1] || 'SP',
+                city: data.personalInfo?.location?.split(', ')[0] || 'São Paulo',
+                postcode: data.personalInfo?.postcode || '',
+                neighborhood: data.personalInfo?.neighborhood || '',
+                address: data.personalInfo?.address || '',
+                number: data.personalInfo?.number || '',
+                complement: data.personalInfo?.complement || '',
+                billingSameAsClient: data.billing?.billingSameAsClient !== false,
+                billingDocument: data.billing?.billingDocument || '',
+                billingEmail: data.billing?.billingEmail || '',
+                paymentMethod: data.billing?.paymentMethod || 'boleto',
+                clientOrigin: 'site', // Default
+                clientStatus: data.personalInfo?.clientStatus || 'ativo',
+                contractSignDate: data.contract?.contractSignDate || '',
+                observations: data.contract?.observations || '',
             }
         }
 
@@ -96,6 +117,7 @@ const CustomerEdit = () => {
                     <CustomerForm
                         defaultValues={getDefaultValues()}
                         newCustomer={false}
+                        viewMode={viewMode}
                         onFormSubmit={handleFormSubmit}
                     >
                         <Container>
@@ -109,7 +131,7 @@ const CustomerEdit = () => {
                                 >
                                     Voltar
                                 </Button>
-                                <div className="flex items-center">
+                                <div className="flex items-center gap-3">
                                     <Button
                                         className="ltr:mr-3 rtl:ml-3"
                                         type="button"
@@ -117,14 +139,24 @@ const CustomerEdit = () => {
                                             'border-error ring-1 ring-error text-error hover:border-error hover:ring-error hover:text-error bg-transparent'
                                         }
                                         icon={<TbTrash />}
+                                        disabled={viewMode}
                                         onClick={handleDelete}
                                     >
                                         Excluir
                                     </Button>
                                     <Button
+                                        variant="twoTone"
+                                        icon={<TbEdit />}
+                                        disabled={!viewMode} // Desabilitado quando em modo edição
+                                        onClick={handleEdit}
+                                    >
+                                        Editar
+                                    </Button>
+                                    <Button
                                         variant="solid"
                                         type="submit"
                                         loading={isSubmiting}
+                                        disabled={viewMode} // Desabilitado quando em modo visualização
                                     >
                                         Salvar
                                     </Button>

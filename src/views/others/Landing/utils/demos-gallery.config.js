@@ -77,7 +77,7 @@ export const marketingDemos = [
     },
     {
         id: 'cutomerCreate',
-        name: 'Cadastrar cliente',
+        name: 'Cadastro de cliente',
         path: '/concepts/customers/customer-create',
     },
     {

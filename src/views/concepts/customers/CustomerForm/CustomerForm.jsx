@@ -9,6 +9,7 @@ import ClientOriginSection from './ClientOriginSection'
 import ClientStatusSection from './ClientStatusSection'
 import ContractDateSection from './ContractDateSection'
 import ContractSection from './ContractSection'
+import ObservationsSection from './ObservationsSection'
 import AccountSection from './AccountSection'
 import isEmpty from 'lodash/isEmpty'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,7 +23,7 @@ const validationSchema = z.object({
         invalid_type_error: 'Selecione um tipo válido' 
     }),
     
-    // Nome/Razão Social (condicional baseado no tipo)
+    // Nome Completo/Razão Social
     firstName: z
         .string()
         .min(1, { message: 'Nome/Razão social é obrigatório' })
@@ -31,9 +32,6 @@ const validationSchema = z.object({
         .refine((value) => /^[a-zA-ZÀ-ÿ\s]*$/.test(value), {
             message: 'Apenas letras são permitidas'
         }),
-    lastName: z
-        .string()
-        .optional(), // Só obrigatório para pessoa física
     
     // CPF/CNPJ (condicional baseado no tipo)
     document: z
@@ -43,6 +41,24 @@ const validationSchema = z.object({
             const cleaned = value.replace(/\D/g, '')
             return cleaned.length === 11 || cleaned.length === 14
         }, { message: 'CPF deve ter 11 dígitos ou CNPJ 14 dígitos' }),
+    
+    // Data de nascimento (opcional, só para pessoa física)
+    birthDate: z
+        .union([z.date(), z.null(), z.string().optional()])
+        .optional()
+        .refine((value, ctx) => {
+            if (!value) return true;
+            let personType = 'fisica';
+            try {
+                personType = ctx?.data?.personType ?? ctx?.parent?.personType ?? 'fisica';
+            } catch (e) {}
+            if (personType === 'fisica' && value instanceof Date) {
+                const today = new Date()
+                const age = today.getFullYear() - value.getFullYear()
+                return age >= 0 && age <= 120
+            }
+            return true
+        }, { message: 'Data de nascimento inválida' }),
     
     // E-mail
     email: z
@@ -55,7 +71,7 @@ const validationSchema = z.object({
         }, { message: 'Formato de e-mail inválido' }),
     
     // Contato principal
-    primaryContact: z.enum(['email', 'phone'], { 
+    primaryContact: z.enum(['email', 'whatsapp'], { 
         required_error: 'Contato principal é obrigatório',
         invalid_type_error: 'Selecione um tipo de contato válido' 
     }),
@@ -73,11 +89,7 @@ const validationSchema = z.object({
     
     // Dados de faturamento
     billingSameAsClient: z.boolean().default(true),
-    billingDocument: z.string().optional().refine((value, ctx) => {
-        const billingSame = ctx.parent.billingSameAsClient
-        if (!billingSame && !value) {
-            return false // Required when billingSameAsClient is false
-        }
+    billingDocument: z.string().optional().refine((value) => {
         if (value && value.length > 0) {
             const cleaned = value.replace(/\D/g, '')
             return cleaned.length === 11 || cleaned.length === 14
@@ -86,11 +98,7 @@ const validationSchema = z.object({
     }, { 
         message: 'CPF deve ter 11 dígitos ou CNPJ 14 dígitos' 
     }),
-    billingEmail: z.string().optional().refine((value, ctx) => {
-        const billingSame = ctx.parent.billingSameAsClient
-        if (!billingSame && !value) {
-            return false // Required when billingSameAsClient is false
-        }
+    billingEmail: z.string().optional().refine((value) => {
         if (value && value.length > 0) {
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
             return emailRegex.test(value)
@@ -111,18 +119,7 @@ const validationSchema = z.object({
         .min(3, { message: 'Palavra chave muito curta!' })
         .max(50, { message: 'Palavra chave muito longa!' }),
     state: z.string().min(1, { message: 'Por favor, selecione um estado' }),
-    address: z
-        .string()
-        .min(1, { message: 'Endereço é obrigatório' })
-        .min(5, { message: 'Endereço muito curto!' })
-        .max(200, { message: 'Endereço muito longo!' }),
-    postcode: z
-        .string()
-        .min(1, { message: 'CEP é obrigatório' })
-        .refine((value) => {
-            const cleaned = value.replace(/\D/g, '')
-            return cleaned.length === 8
-        }, { message: 'CEP deve ter 8 dígitos' }),
+    
     city: z
         .string()
         .min(1, { message: 'Cidade é obrigatória' })
@@ -131,8 +128,38 @@ const validationSchema = z.object({
         .refine((value) => /^[a-zA-ZÀ-ÿ\s]*$/.test(value), {
             message: 'Apenas letras são permitidas'
         }),
+    
+    postcode: z
+        .string()
+        .min(1, { message: 'CEP é obrigatório' })
+        .refine((value) => {
+            const cleaned = value.replace(/\D/g, '')
+            return cleaned.length === 8
+        }, { message: 'CEP deve ter 8 dígitos' }),
+    
+    neighborhood: z
+        .string()
+        .min(1, { message: 'Bairro é obrigatório' })
+        .min(2, { message: 'Bairro muito curto!' })
+        .max(100, { message: 'Bairro muito longo!' }),
+    
+    address: z
+        .string()
+        .min(1, { message: 'Logradouro é obrigatório' })
+        .min(5, { message: 'Logradouro muito curto!' })
+        .max(200, { message: 'Logradouro muito longo!' }),
+    
+    number: z
+        .string()
+        .min(1, { message: 'Número é obrigatório' })
+        .max(10, { message: 'Número muito longo!' }),
+    
+    complement: z
+        .string()
+        .max(100, { message: 'Complemento muito longo!' })
+        .optional(),
     // Situação do cliente (antiga tags)
-    clientStatus: z.enum(['ativo', 'inativo', 'prospectado'], { 
+    clientStatus: z.enum(['ativo', 'inativo', 'em-atendimento', 'prospectado'], { 
         required_error: 'Situação do cliente é obrigatória',
         invalid_type_error: 'Selecione uma situação válida' 
     }),
@@ -152,6 +179,11 @@ const validationSchema = z.object({
         }
         return true
     }, { message: 'Data de assinatura inválida' }),
+    
+    observations: z.string().optional().refine((value) => {
+        if (!value) return true
+        return value.length <= 150
+    }, { message: 'Observações devem ter no máximo 150 caracteres' }),
 })
 
 const CustomerForm = (props) => {
@@ -159,12 +191,14 @@ const CustomerForm = (props) => {
         onFormSubmit,
         defaultValues = {},
         newCustomer = false,
+        viewMode = false, // Novo prop para modo visualização
         children,
     } = props
 
     const {
         handleSubmit,
         reset,
+        setValue,
         formState: { errors },
         control,
         watch,
@@ -175,7 +209,14 @@ const CustomerForm = (props) => {
                 accountVerified: true,
                 dialCode: '+55', // Brasil como padrão
                 state: 'SP', // São Paulo como padrão
+                city: '', // Cidade vazia
+                neighborhood: '', // Bairro vazio
+                address: '', // Logradouro vazio
+                number: '', // Número vazio
+                complement: '', // Complemento vazio
+                postcode: '', // CEP vazio
                 personType: 'fisica', // Pessoa física como padrão
+                birthDate: null, // Data de nascimento vazia por padrão
                 primaryContact: 'email', // E-mail como contato principal padrão
                 billingSameAsClient: true, // Dados de faturamento iguais por padrão
                 internalResponsible: 'Advogado Principal', // Temporário até implementar seleção
@@ -194,7 +235,14 @@ const CustomerForm = (props) => {
             const mergedDefaults = {
                 dialCode: '+55', // Brasil como padrão
                 state: 'SP', // São Paulo como padrão
+                city: '', // Cidade vazia
+                neighborhood: '', // Bairro vazio
+                address: '', // Logradouro vazio
+                number: '', // Número vazio
+                complement: '', // Complemento vazio
+                postcode: '', // CEP vazio
                 personType: 'fisica', // Pessoa física como padrão
+                birthDate: null, // Data de nascimento vazia por padrão
                 primaryContact: 'email', // E-mail como contato principal padrão
                 billingSameAsClient: true, // Dados de faturamento iguais por padrão
                 internalResponsible: 'Advogado Principal', // Temporário
@@ -209,6 +257,10 @@ const CustomerForm = (props) => {
     }, [JSON.stringify(defaultValues)])
 
     const onSubmit = (values) => {
+        // Corrige birthDate para null se não for Date
+        if (values.birthDate && !(values.birthDate instanceof Date)) {
+            values.birthDate = null;
+        }
         onFormSubmit?.(values)
     }
 
@@ -221,17 +273,18 @@ const CustomerForm = (props) => {
             <Container>
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="gap-4 flex flex-col flex-auto">
-                        <OverviewSection control={control} errors={errors} watch={watch} />
-                        <AddressSection control={control} errors={errors} />
+                        <OverviewSection control={control} errors={errors} watch={watch} viewMode={viewMode} />
+                        <AddressSection control={control} errors={errors} viewMode={viewMode} />
+                        {/* <BillingSection control={control} errors={errors} watch={watch} setValue={setValue} viewMode={viewMode} /> */}
                     </div>
                     <div className="md:w-[370px] gap-4 flex flex-col">
-                        <ClientOriginSection control={control} errors={errors} />
-                        <ClientStatusSection control={control} errors={errors} />
-                        <ContractDateSection control={control} errors={errors} />
-                        <ContractSection control={control} errors={errors} />
-                        <BillingSection control={control} errors={errors} watch={watch} />
+                        <ClientOriginSection control={control} errors={errors} viewMode={viewMode} />
+                        <ClientStatusSection control={control} errors={errors} viewMode={viewMode} />
+                        {/* <ContractDateSection control={control} errors={errors} viewMode={viewMode} /> */}
+                        <ObservationsSection control={control} errors={errors} viewMode={viewMode} />
+                        <ContractSection control={control} errors={errors} viewMode={viewMode} />
                         {!newCustomer && (
-                            <AccountSection control={control} errors={errors} />
+                            <AccountSection control={control} errors={errors} viewMode={viewMode} />
                         )}
                     </div>
                 </div>

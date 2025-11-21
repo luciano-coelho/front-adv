@@ -5,7 +5,7 @@ import { DatePicker } from '@/components/ui/DatePicker'
 import { FormItem } from '@/components/ui/Form'
 import { Controller } from 'react-hook-form'
 
-const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
+const OverviewSection = ({ control, errors, watch }) => {
     // Watch para reagir às mudanças do tipo de pessoa
     const personType = watch('personType')
 
@@ -69,37 +69,35 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
 
     return (
         <Card>
-            <h4 className="mb-7">Dados do Cliente</h4>
+            <h4 className="mb-6">Dados do Cliente</h4>
             
             {/* Linha 1: Tipo de Pessoa */}
-            <div className="mb-4">
-                <FormItem
-                    label="Tipo de Pessoa"
-                    invalid={Boolean(errors.personType)}
-                    errorMessage={errors.personType?.message}
-                >
-                    <Controller
-                        name="personType"
-                        control={control}
-                        render={({ field }) => (
-                            <Select
-                                options={[
-                                    { value: 'fisica', label: 'Pessoa Física' },
-                                    { value: 'juridica', label: 'Pessoa Jurídica' }
-                                ]}
-                                {...field}
-                                placeholder="Selecione o tipo"
-                                value={[
-                                    { value: 'fisica', label: 'Pessoa Física' },
-                                    { value: 'juridica', label: 'Pessoa Jurídica' }
-                                ].find(option => option.value === field.value)}
-                                isDisabled={viewMode}
-                                onChange={(option) => field.onChange(option?.value)}
-                            />
-                        )}
-                    />
-                </FormItem>
-            </div>
+            <FormItem
+                label="Tipo de Pessoa"
+                invalid={Boolean(errors.personType)}
+                errorMessage={errors.personType?.message}
+                className="mb-6"
+            >
+                <Controller
+                    name="personType"
+                    control={control}
+                    render={({ field }) => (
+                        <Select
+                            options={[
+                                { value: 'fisica', label: 'Pessoa Física' },
+                                { value: 'juridica', label: 'Pessoa Jurídica' }
+                            ]}
+                            {...field}
+                            placeholder="Selecione o tipo"
+                            value={[
+                                { value: 'fisica', label: 'Pessoa Física' },
+                                { value: 'juridica', label: 'Pessoa Jurídica' }
+                            ].find(option => option.value === field.value)}
+                            onChange={(option) => field.onChange(option?.value)}
+                        />
+                    )}
+                />
+            </FormItem>
 
             {/* Linha 2: Nome/Razão Social e CPF/CNPJ */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
@@ -117,7 +115,6 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
                                 autoComplete="off"
                                 placeholder={personType === 'fisica' ? 'Nome completo do cliente' : 'Razão Social da empresa'}
                                 value={validateName(field.value || '')}
-                                disabled={viewMode}
                                 onChange={(e) => field.onChange(e.target.value)}
                                 onBlur={field.onBlur}
                             />
@@ -139,7 +136,6 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
                                 autoComplete="off"
                                 placeholder={personType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
                                 value={formatDocument(field.value || '')}
-                                disabled={viewMode}
                                 onChange={(e) => field.onChange(e.target.value)}
                                 onBlur={field.onBlur}
                             />
@@ -163,9 +159,9 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
                                 <DatePicker
                                     inputtable
                                     placeholder="Selecione a data de nascimento"
-                                    inputFormat="DD/MM/YYYY"
-                                    value={field.value instanceof Date ? field.value : null}
-                                    onChange={(date) => field.onChange(date instanceof Date && !isNaN(date) ? date : null)}
+                                    inputFormat="dd/MM/yyyy"
+                                    value={field.value}
+                                    onChange={(date) => field.onChange(date)}
                                 />
                             )}
                         />
@@ -188,7 +184,6 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
                                 autoComplete="off"
                                 placeholder={personType === 'fisica' ? 'E-mail do cliente' : 'E-mail da empresa'}
                                 value={validateEmail(field.value || '')}
-                                disabled={viewMode}
                                 onChange={(e) => field.onChange(e.target.value)}
                                 onBlur={field.onBlur}
                             />
@@ -213,7 +208,6 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
                                 autoComplete="off"
                                 placeholder="(11) 99999-9999"
                                 value={formatPhoneNumber(field.value || '')}
-                                disabled={viewMode}
                                 onChange={(e) => field.onChange(e.target.value)}
                                 onBlur={field.onBlur}
                             />
@@ -249,7 +243,7 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
             </div>
 
             {/* Linha 5: Responsável Interno e Palavra Chave de Segurança */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormItem
                     label="Responsável Interno"
                     invalid={Boolean(errors.internalResponsible)}
@@ -288,7 +282,6 @@ const OverviewSection = ({ control, errors, watch, viewMode = false }) => {
                                 type="text"
                                 autoComplete="off"
                                 placeholder="Palavra para validação de contatos"
-                                disabled={viewMode}
                                 {...field}
                             />
                         )}

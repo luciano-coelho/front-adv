@@ -12,14 +12,15 @@ const clientOriginOptions = [
     { value: 'parceria', label: 'Parceria' },
 ]
 
-const ClientOriginSection = ({ control, errors }) => {
+const ClientOriginSection = ({ control, errors, viewMode = false }) => {
     return (
         <Card>
-            <h4 className="mb-6">Origem do Cliente</h4>
+            <h4 className="mb-4">Origem do Cliente</h4>
             <FormItem
                 label="Como nos conheceu"
                 invalid={Boolean(errors.clientOrigin)}
                 errorMessage={errors.clientOrigin?.message}
+                className="mb-4"
             >
                 <Controller
                     name="clientOrigin"
@@ -30,6 +31,7 @@ const ClientOriginSection = ({ control, errors }) => {
                             {...field}
                             placeholder="Selecione a origem"
                             value={clientOriginOptions.find(option => option.value === field.value)}
+                            isDisabled={viewMode}
                             onChange={(option) => field.onChange(option?.value)}
                         />
                     )}

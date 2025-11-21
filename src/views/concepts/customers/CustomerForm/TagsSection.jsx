@@ -9,7 +9,7 @@ const clientStatusOptions = [
     { value: 'prospectado', label: 'Prospectado' },
 ]
 
-const TagsSection = ({ control, errors }) => {
+const TagsSection = ({ control, errors, viewMode }) => {
     return (
         <Card>
             <h4 className="mb-6">Situação do Cliente</h4>
@@ -27,6 +27,7 @@ const TagsSection = ({ control, errors }) => {
                             {...field}
                             placeholder="Selecione a situação"
                             value={clientStatusOptions.find(option => option.value === field.value)}
+                            isDisabled={viewMode}
                             onChange={(option) => field.onChange(option?.value)}
                         />
                     )}

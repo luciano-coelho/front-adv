@@ -3,23 +3,81 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
 import Tooltip from '@/components/ui/Tooltip'
+import Tag from '@/components/ui/Tag'
 import toast from '@/components/ui/toast'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import dayjs from 'dayjs'
-import { HiPencil, HiOutlineTrash } from 'react-icons/hi'
-import {
-    FaXTwitter,
-    FaFacebookF,
-    FaLinkedinIn,
-    FaPinterestP,
-} from 'react-icons/fa6'
+import { HiPencil, HiOutlineTrash, HiMail, HiPhone, HiEye, HiEyeOff } from 'react-icons/hi'
 import { useNavigate } from 'react-router'
 
-const CustomerInfoField = ({ title, value }) => {
+const statusColor = {
+    ativo: 'bg-emerald-500 text-white',
+    inativo: 'bg-red-500 text-white',
+    'em-atendimento': 'bg-orange-500 text-white',
+    prospectado: 'bg-yellow-500 text-black',
+}
+
+const CustomerInfoField = ({ title, value, className = '' }) => {
+    return (
+        <div className={className}>
+            <span className="text-sm text-gray-600 dark:text-gray-400">{title}</span>
+            <p className="font-semibold text-gray-900 dark:text-gray-100 mt-1">{value}</p>
+        </div>
+    )
+}
+
+const SecurityKeywordField = ({ keyword }) => {
+    const [showKeyword, setShowKeyword] = useState(false)
+    
     return (
         <div>
-            <span className="font-semibold">{title}</span>
-            <p className="heading-text font-bold">{value}</p>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Palavra Chave</span>
+            <div className="flex items-center gap-2 mt-1">
+                <span className="text-gray-900 dark:text-gray-100 font-semibold font-mono">
+                    {showKeyword ? keyword : '••••••••'}
+                </span>
+                <Tooltip title={showKeyword ? 'Ocultar palavra chave' : 'Exibir palavra chave'}>
+                    <button
+                        className="text-gray-500 hover:text-gray-700 transition-colors p-1"
+                        onClick={() => setShowKeyword(!showKeyword)}
+                    >
+                        {showKeyword ? <HiEyeOff className="text-lg" /> : <HiEye className="text-lg" />}
+                    </button>
+                </Tooltip>
+            </div>
+        </div>
+    )
+}
+
+const ContactMethodField = ({ primaryContact }) => {
+    const isPrimaryEmail = primaryContact === 'email'
+    const isPrimaryWhatsApp = primaryContact === 'whatsapp'
+    
+    return (
+        <div>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Contato Preferencial</span>
+            <div className="flex items-center gap-3 mt-2">
+                <Tooltip title={`E-mail${isPrimaryEmail ? ' (Principal)' : ''}`}>
+                    <div className="flex items-center gap-2">
+                        <HiMail className={`text-lg ${
+                            isPrimaryEmail ? 'text-blue-600' : 'text-gray-400'
+                        }`} />
+                        {isPrimaryEmail && (
+                            <span className="text-xs font-medium text-blue-600">Principal</span>
+                        )}
+                    </div>
+                </Tooltip>
+                <Tooltip title={`WhatsApp${isPrimaryWhatsApp ? ' (Principal)' : ''}`}>
+                    <div className="flex items-center gap-2">
+                        <HiPhone className={`text-lg ${
+                            isPrimaryWhatsApp ? 'text-green-600' : 'text-gray-400'
+                        }`} />
+                        {isPrimaryWhatsApp && (
+                            <span className="text-xs font-medium text-green-600">Principal</span>
+                        )}
+                    </div>
+                </Tooltip>
+            </div>
         </div>
     )
 }
@@ -28,10 +86,6 @@ const ProfileSection = ({ data = {} }) => {
     const navigate = useNavigate()
 
     const [dialogOpen, setDialogOpen] = useState(false)
-
-    const handleSocialNavigate = (link = '') => {
-        window.open(`https://${link}`, '_blank', 'rel=noopener noreferrer')
-    }
 
     const handleDialogClose = () => {
         setDialogOpen(false)
@@ -52,12 +106,31 @@ const ProfileSection = ({ data = {} }) => {
     }
 
     const handleSendMessage = () => {
-        navigate('/concepts/chat')
+        // Redireciona para WhatsApp ou abre cliente de e-mail baseado na preferência
+        const primaryContact = data.personalInfo?.primaryContact
+        const phone = data.personalInfo?.phoneNumber?.replace(/\D/g, '')
+        
+        if (primaryContact === 'whatsapp' && phone) {
+            window.open(`https://wa.me/55${phone}`, '_blank')
+        } else {
+            window.location.href = `mailto:${data.email}`
+        }
     }
 
     const handleEdit = () => {
-        navigate(`/concepts/customers/customer-edit/${data.id}`)
+        navigate('/concepts/customers/customer-create')
     }
+
+    // Labels para status
+    const statusLabels = {
+        ativo: 'Ativo',
+        inativo: 'Inativo',
+        'em-atendimento': 'Em Atendimento', 
+        prospectado: 'Prospectado'
+    }
+
+    // Labels para tipo de pessoa
+    const personTypeLabel = data.personalInfo?.personType === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica'
 
     return (
         <Card className="w-full">
@@ -73,78 +146,69 @@ const ProfileSection = ({ data = {} }) => {
                 </Tooltip>
             </div>
             <div className="flex flex-col xl:justify-between h-full 2xl:min-w-[360px] mx-auto">
-                <div className="flex xl:flex-col items-center gap-4 mt-6">
-                    <h4 className="font-bold">{data.name}</h4>
+                {/* Cabeçalho com nome e status */}
+                <div className="flex xl:flex-col items-start gap-4 mt-6">
+                    <div className="w-full">
+                        <h4 className="font-bold text-xl mb-2">{data.name}</h4>
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                                data.personalInfo?.personType === 'fisica' 
+                                    ? 'bg-purple-100 text-purple-700'
+                                    : 'bg-orange-100 text-orange-700'
+                            }`}>
+                                {personTypeLabel}
+                            </span>
+                            <Tag className={statusColor[data.personalInfo?.clientStatus] || statusColor.ativo}>
+                                <span>
+                                    {statusLabels[data.personalInfo?.clientStatus] || 'Ativo'}
+                                </span>
+                            </Tag>
+                        </div>
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-y-7 gap-x-4 mt-10">
-                    <CustomerInfoField title="Email" value={data.email} />
-                    <CustomerInfoField
-                        title="Telefone"
-                        value={data.personalInfo?.phoneNumber}
+                
+                {/* Informações do cliente */}
+                <div className="grid grid-cols-1 gap-y-6 mt-6">
+                    <CustomerInfoField 
+                        title="E-mail" 
+                        value={data.email || 'N/A'} 
                     />
                     <CustomerInfoField
-                        title="Data de Nascimento"
-                        value={data.personalInfo?.birthday}
+                        title="Telefone/WhatsApp"
+                        value={data.personalInfo?.phoneNumber || 'N/A'}
+                    />
+                    <CustomerInfoField
+                        title="CPF/CNPJ"
+                        value={data.personalInfo?.document || 'N/A'}
+                    />
+                    {data.personalInfo?.personType === 'fisica' && (
+                        <CustomerInfoField
+                            title="Data de Nascimento"
+                            value={data.personalInfo?.birthday || 'N/A'}
+                        />
+                    )}
+                    <ContactMethodField 
+                        primaryContact={data.personalInfo?.primaryContact}
+                    />
+                    <SecurityKeywordField 
+                        keyword={data.personalInfo?.securityKeyword || 'N/A'}
+                    />
+                    <CustomerInfoField
+                        title="Localização"
+                        value={data.personalInfo?.location || 'N/A'}
                     />
                     <CustomerInfoField
                         title="Último Acesso"
                         value={dayjs
-                            .unix(data.lastOnline)
-                            .format('DD MMM YYYY hh:mm A')}
+                            .unix(data.lastOnline || Math.floor(Date.now() / 1000))
+                            .format('DD/MM/YYYY HH:mm')}
                     />
-                    <div className="mb-7">
-                        <span>Redes Sociais</span>
-                        <div className="flex mt-4 gap-2">
-                            <Button
-                                size="sm"
-                                icon={
-                                    <FaFacebookF className="text-[#2259f2]" />
-                                }
-                                onClick={() =>
-                                    handleSocialNavigate(
-                                        data.personalInfo?.facebook,
-                                    )
-                                }
-                            />
-                            <Button
-                                size="sm"
-                                icon={
-                                    <FaXTwitter className="text-black dark:text-white" />
-                                }
-                                onClick={() =>
-                                    handleSocialNavigate(
-                                        data.personalInfo?.twitter,
-                                    )
-                                }
-                            />
-                            <Button
-                                size="sm"
-                                icon={
-                                    <FaLinkedinIn className="text-[#155fb8]" />
-                                }
-                                onClick={() =>
-                                    handleSocialNavigate(
-                                        data.personalInfo?.linkedIn,
-                                    )
-                                }
-                            />
-                            <Button
-                                size="sm"
-                                icon={
-                                    <FaPinterestP className="text-[#df0018]" />
-                                }
-                                onClick={() =>
-                                    handleSocialNavigate(
-                                        data.personalInfo?.pinterest,
-                                    )
-                                }
-                            />
-                        </div>
-                    </div>
                 </div>
-                <div className="flex flex-col gap-4">
+                
+                {/* Ações */}
+                <div className="flex flex-col gap-4 mt-8">
                     <Button block variant="solid" onClick={handleSendMessage}>
-                        Enviar Mensagem
+                        {data.personalInfo?.primaryContact === 'whatsapp' ? 'Enviar WhatsApp' : 'Enviar E-mail'}
                     </Button>
                     <Button
                         block
@@ -154,7 +218,7 @@ const ProfileSection = ({ data = {} }) => {
                         icon={<HiOutlineTrash />}
                         onClick={handleDialogOpen}
                     >
-                        Excluir
+                        Excluir Cliente
                     </Button>
                 </div>
                 <ConfirmDialog

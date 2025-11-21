@@ -11,11 +11,13 @@ import {
 
 const { MenuItem } = Menu
 
+import { TbUsers } from 'react-icons/tb'
 const menuList = [
     { label: 'Perfil', value: 'profile', icon: <TbUserSquare /> },
     { label: 'Segurança', value: 'security', icon: <TbLock /> },
     { label: 'Plano', value: 'billing', icon: <TbFileDollar /> },
     { label: 'Configurar Agenda', value: 'calendar', icon: <TbCalendar /> },
+    { label: 'Minha Equipe', value: 'team', icon: <TbUsers /> },
 ]
 
 export const SettingsMenu = ({ onChange }) => {

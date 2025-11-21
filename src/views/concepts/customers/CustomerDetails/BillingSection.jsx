@@ -174,8 +174,8 @@ const BillingSection = ({ data }) => {
                         })}
                 </TBody>
             </Table>
-            <h6 className="mt-8">Endereços</h6>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <h6 className="mt-6">Endereços</h6>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                 <Card>
                     <div className="font-bold heading-text">
                         Endereço de Cobrança

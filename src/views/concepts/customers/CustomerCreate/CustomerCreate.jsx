@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router'
 import Container from '@/components/shared/Container'
 import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
@@ -8,23 +9,55 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import sleep from '@/utils/sleep'
 import { TbTrash } from 'react-icons/tb'
 import { useNavigate } from 'react-router'
+import { apiUpdateCustomerMock } from '@/services/CustomersService'
+import useCustomerList from '../CustomerList/hooks/useCustomerList'
 
 const CustomerEdit = () => {
     const navigate = useNavigate()
+    const location = useLocation()
+    const { mutate } = useCustomerList()
 
     const [discardConfirmationOpen, setDiscardConfirmationOpen] =
         useState(false)
     const [isSubmiting, setIsSubmiting] = useState(false)
 
     const handleFormSubmit = async (values) => {
-        console.log('Submitted values', values)
         setIsSubmiting(true)
-        await sleep(800)
+        // Monta JSON customizado para backend
+        const formatDate = (date) => {
+            if (!date) return null;
+            const d = date instanceof Date ? date : new Date(date);
+            if (isNaN(d.getTime())) return null;
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+        };
+
+        const onlyNumbers = (str) => str ? str.replace(/\D/g, '') : '';
+
+        const customerJson = {
+            ...values,
+            birthDate: formatDate(values.birthDate),
+            document: onlyNumbers(values.document),
+            phoneNumber: onlyNumbers(values.phoneNumber),
+            postcode: onlyNumbers(values.postcode),
+            clientFile: values.contractFile ?? null,
+        };
+        delete customerJson.contractFile;
+        // Remove campos ocultos
+        delete customerJson.paymentMethod;
+        delete customerJson.billingDocument;
+        delete customerJson.billingEmail;
+        delete customerJson.billingSameAsClient;
+
+        console.log('JSON do cliente para backend:', JSON.stringify(customerJson, null, 2));
+        await apiUpdateCustomerMock(values)
+        await sleep(500)
         setIsSubmiting(false)
         toast.push(
-            <Notification type="success">Cliente criado!</Notification>,
+            <Notification type="success">Cliente salvo com sucesso!</Notification>,
             { placement: 'top-center' },
         )
+        mutate() // Atualiza a listagem local
         navigate('/concepts/customers/customer-list')
     }
 
@@ -45,11 +78,13 @@ const CustomerEdit = () => {
         setDiscardConfirmationOpen(false)
     }
 
+    // Se vier do editar, location.state.customer terá os dados
+    const editCustomer = location.state?.customer
     return (
         <>
             <CustomerForm
-                newCustomer
-                defaultValues={{
+                newCustomer={!editCustomer}
+                defaultValues={editCustomer || {
                     firstName: '',
                     lastName: '',
                     email: '',
@@ -62,7 +97,10 @@ const CustomerEdit = () => {
                     postcode: '',
                     tags: [],
                 }}
-                onFormSubmit={handleFormSubmit}
+                onFormSubmit={(values) => {
+                    console.log('Form submit:', values)
+                    handleFormSubmit(values)
+                }}
             >
                 <Container>
                     <div className="flex items-center justify-between px-8">
@@ -83,6 +121,7 @@ const CustomerEdit = () => {
                                 variant="solid"
                                 type="submit"
                                 loading={isSubmiting}
+                                id="customer-save-btn"
                             >
                                 Salvar
                             </Button>
