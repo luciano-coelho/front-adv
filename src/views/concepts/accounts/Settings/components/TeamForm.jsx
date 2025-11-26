@@ -9,6 +9,41 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 
+// Funções utilitárias copiadas do SettingsProfile.jsx
+const formatCPF = (value) => {
+  if (!value) return ''
+  const numbers = value.replace(/\D/g, '')
+  if (numbers.length <= 3) {
+    return numbers
+  } else if (numbers.length <= 6) {
+    return `${numbers.slice(0, 3)}.${numbers.slice(3)}`
+  } else if (numbers.length <= 9) {
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`
+  } else {
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`
+  }
+}
+
+const formatOAB = (value) => {
+  if (!value) return ''
+  const numbers = value.replace(/\D/g, '')
+  return numbers.slice(0, 6)
+}
+
+const formatPhoneNumber = (value) => {
+  if (!value) return ''
+  const numbers = value.replace(/\D/g, '')
+  if (numbers.length <= 2) {
+    return `(${numbers}`
+  } else if (numbers.length <= 7) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`
+  } else if (numbers.length <= 11) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`
+  } else {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`
+  }
+}
+
 const roleOptions = [
   { value: 'secretaria', label: 'Secretaria(o)' },
   { value: 'advogado', label: 'Advogado(a)' },
@@ -16,8 +51,66 @@ const roleOptions = [
   { value: 'financeiro', label: 'Financeiro' },
 ]
 
+import { z } from 'zod'
+const oabStates = [
+  { value: 'AC', label: 'Acre (AC)' },
+  { value: 'AL', label: 'Alagoas (AL)' },
+  { value: 'AP', label: 'Amapá (AP)' },
+  { value: 'AM', label: 'Amazonas (AM)' },
+  { value: 'BA', label: 'Bahia (BA)' },
+  { value: 'CE', label: 'Ceará (CE)' },
+  { value: 'DF', label: 'Distrito Federal (DF)' },
+  { value: 'ES', label: 'Espírito Santo (ES)' },
+  { value: 'GO', label: 'Goiás (GO)' },
+  { value: 'MA', label: 'Maranhão (MA)' },
+  { value: 'MT', label: 'Mato Grosso (MT)' },
+  { value: 'MS', label: 'Mato Grosso do Sul (MS)' },
+  { value: 'MG', label: 'Minas Gerais (MG)' },
+  { value: 'PA', label: 'Pará (PA)' },
+  { value: 'PB', label: 'Paraíba (PB)' },
+  { value: 'PR', label: 'Paraná (PR)' },
+  { value: 'PE', label: 'Pernambuco (PE)' },
+  { value: 'PI', label: 'Piauí (PI)' },
+  { value: 'RJ', label: 'Rio de Janeiro (RJ)' },
+  { value: 'RN', label: 'Rio Grande do Norte (RN)' },
+  { value: 'RS', label: 'Rio Grande do Sul (RS)' },
+  { value: 'RO', label: 'Rondônia (RO)' },
+  { value: 'RR', label: 'Roraima (RR)' },
+  { value: 'SC', label: 'Santa Catarina (SC)' },
+  { value: 'SP', label: 'São Paulo (SP)' },
+  { value: 'SE', label: 'Sergipe (SE)' },
+  { value: 'TO', label: 'Tocantins (TO)' }
+]
+
+const oabStatusOptions = [
+  { value: 'ativo', label: 'Ativo' },
+  { value: 'inativo', label: 'Inativo' },
+  { value: 'suspenso', label: 'Suspenso' }
+]
+
+const validationSchema = z.object({
+  role: z.string().min(1, { message: 'Selecione a função' }),
+  name: z.string().min(1, { message: 'Digite o nome completo' }),
+  cpf: z.string().min(1, { message: 'Digite o CPF' }),
+  oabNumber: z.string().optional(),
+  oabState: z.string().optional(),
+  oabStatus: z.string().optional(),
+  address: z.string().min(1, { message: 'Digite o endereço completo' }),
+  phone: z.string().min(1, { message: 'Digite o telefone/WhatsApp' }),
+  email: z.string().min(1, { message: 'Digite o e-mail' }).email({ message: 'E-mail inválido' }),
+})
+
 const TeamForm = ({ onClose, onSave, disableSave }) => {
-  const { control, watch, handleSubmit, reset } = useForm()
+  const { control, watch, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: async (values, context, options) => {
+      try {
+        const result = validationSchema.parse(values)
+        return { values: result, errors: {} }
+      } catch (err) {
+        return { values: {}, errors: err.formErrors?.fieldErrors || {} }
+      }
+    }
+  })
   const [submitted, setSubmitted] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const role = watch('role')
@@ -25,7 +118,10 @@ const TeamForm = ({ onClose, onSave, disableSave }) => {
   const onSubmit = (data) => {
     setSubmitted(true)
     toast.push(
-      <Notification type="success">Membro adicionado com sucesso à equipe!</Notification>,
+      <Notification type="success">
+        Membro adicionado com sucesso à equipe!<br />
+        Um e-mail será enviado para o membro criar sua senha de acesso ao sistema.
+      </Notification>,
       { placement: 'top-center' },
     )
     if (onSave) onSave(data)
@@ -53,7 +149,7 @@ const TeamForm = ({ onClose, onSave, disableSave }) => {
     <Card className="max-w-2xl mx-auto mt-8">
       <h4 className="mb-7">Adicionar Membro à Equipe</h4>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormItem label="Selecione a função">
+        <FormItem label="Selecione a função" invalid={Boolean(errors.role)} errorMessage={errors.role?.message}>
           <Controller
             name="role"
             control={control}
@@ -68,7 +164,7 @@ const TeamForm = ({ onClose, onSave, disableSave }) => {
             )}
           />
         </FormItem>
-        <FormItem label="Nome Completo">
+        <FormItem label="Nome Completo" invalid={Boolean(errors.name)} errorMessage={errors.name?.message}>
           <Controller
             name="name"
             control={control}
@@ -77,27 +173,73 @@ const TeamForm = ({ onClose, onSave, disableSave }) => {
             )}
           />
         </FormItem>
-        <FormItem label="CPF">
+        <FormItem label="CPF" invalid={Boolean(errors.cpf)} errorMessage={errors.cpf?.message}>
           <Controller
             name="cpf"
             control={control}
             render={({ field }) => (
-              <Input type="text" placeholder="Digite o CPF" {...field} />
+              <Input
+                type="text"
+                placeholder="Digite o CPF"
+                value={formatCPF(field.value || '')}
+                onChange={e => field.onChange(e.target.value)}
+                onBlur={field.onBlur}
+              />
             )}
           />
         </FormItem>
         {role === 'advogado' && (
-          <FormItem label="OAB">
-            <Controller
-              name="oab"
-              control={control}
-              render={({ field }) => (
-                <Input type="text" placeholder="Digite o número da OAB" {...field} />
-              )}
-            />
-          </FormItem>
+          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+            <div className="grid md:grid-cols-3 gap-4">
+              <FormItem label="Número OAB *" invalid={Boolean(errors.oabNumber)} errorMessage={errors.oabNumber?.message}>
+                <Controller
+                  name="oabNumber"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      type="text"
+                      placeholder="Digite o número da OAB"
+                      value={formatOAB(field.value || '')}
+                      onChange={e => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
+                    />
+                  )}
+                />
+              </FormItem>
+              <FormItem label="UF da OAB *" invalid={Boolean(errors.oabState)} errorMessage={errors.oabState?.message}>
+                <Controller
+                  name="oabState"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      options={oabStates}
+                      {...field}
+                      placeholder="Selecione o estado"
+                      value={oabStates.find(option => option.value === field.value)}
+                      onChange={option => field.onChange(option?.value)}
+                    />
+                  )}
+                />
+              </FormItem>
+              <FormItem label="Situação OAB *" invalid={Boolean(errors.oabStatus)} errorMessage={errors.oabStatus?.message}>
+                <Controller
+                  name="oabStatus"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      options={oabStatusOptions}
+                      {...field}
+                      placeholder="Status"
+                      value={oabStatusOptions.find(option => option.value === field.value)}
+                      onChange={option => field.onChange(option?.value)}
+                    />
+                  )}
+                />
+              </FormItem>
+            </div>
+          </div>
         )}
-        <FormItem label="Endereço Completo">
+        <FormItem label="Endereço Completo" invalid={Boolean(errors.address)} errorMessage={errors.address?.message}>
           <Controller
             name="address"
             control={control}
@@ -106,12 +248,33 @@ const TeamForm = ({ onClose, onSave, disableSave }) => {
             )}
           />
         </FormItem>
-        <FormItem label="Informações de Contato">
+        <FormItem label="Telefone/WhatsApp" invalid={Boolean(errors.phone)} errorMessage={errors.phone?.message}>
           <Controller
-            name="contact"
+            name="phone"
             control={control}
             render={({ field }) => (
-              <Input type="text" placeholder="Telefone, WhatsApp ou E-mail" {...field} />
+              <Input
+                type="text"
+                placeholder="Digite o telefone ou WhatsApp"
+                value={formatPhoneNumber(field.value || '')}
+                onChange={e => field.onChange(e.target.value)}
+                onBlur={field.onBlur}
+              />
+            )}
+          />
+        </FormItem>
+        <FormItem label="E-mail" invalid={Boolean(errors.email)} errorMessage={errors.email?.message}>
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <Input
+                type="email"
+                placeholder="Digite o e-mail"
+                value={field.value || ''}
+                onChange={e => field.onChange(e.target.value)}
+                onBlur={field.onBlur}
+              />
             )}
           />
         </FormItem>
