@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import Drawer from '@/components/ui/Drawer'
 import Avatar from '@/components/ui/Avatar'
+import { HiOutlineUser } from 'react-icons/hi'
 import Button from '@/components/ui/Button'
 import CloseButton from '@/components/ui/CloseButton'
 import FileIcon from '@/components/view/FileIcon'
@@ -102,7 +103,7 @@ const FileDetails = ({ onShare }) => {
                                     key={user.userName}
                                     className="flex items-center gap-2"
                                 >
-                                    <Avatar src={user.userImg} alt="" />
+                                    <Avatar icon={<HiOutlineUser />} alt="Perfil" />
                                     <div>
                                         <div className="heading-text font-semibold">
                                             {user.userName}

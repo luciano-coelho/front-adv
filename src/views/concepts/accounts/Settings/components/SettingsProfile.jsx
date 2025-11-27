@@ -394,50 +394,7 @@ const SettingsProfile = () => {
                     
                     {/* Foto/Avatar */}
                     <div className="mb-6">
-                        <Controller
-                            name="img"
-                            control={control}
-                            render={({ field }) => (
-                                <div className="flex items-center gap-4">
-                                    <Avatar
-                                        size={90}
-                                        className="border-4 border-white bg-gray-100 text-gray-300 shadow-lg"
-                                        icon={<HiOutlineUser />}
-                                        src={field.value}
-                                    />
-                                    <div className="flex items-center gap-2">
-                                        <Upload
-                                            showList={false}
-                                            uploadLimit={1}
-                                            beforeUpload={beforeUpload}
-                                            onChange={(files) => {
-                                                if (files.length > 0) {
-                                                    field.onChange(
-                                                        URL.createObjectURL(files[0])
-                                                    )
-                                                }
-                                            }}
-                                        >
-                                            <Button
-                                                variant="solid"
-                                                size="sm"
-                                                type="button"
-                                                icon={<TbPlus />}
-                                            >
-                                                Atualizar Foto
-                                            </Button>
-                                        </Upload>
-                                        <Button
-                                            size="sm"
-                                            type="button"
-                                            onClick={() => field.onChange('')}
-                                        >
-                                            Remover
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        />
+                        {/* Upload de foto removido conforme solicitado */}
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4 mb-4">
@@ -482,54 +439,25 @@ const SettingsProfile = () => {
 
                     <div className="mb-4">
                         <label className="form-label mb-2">Telefone/WhatsApp *</label>
-                        <div className="flex items-end gap-4 w-full">
-                            <FormItem
-                                className="w-[120px]"
-                                invalid={Boolean(errors.phoneNumber) || Boolean(errors.dialCode)}
-                            >
-                                <Controller
-                                    name="dialCode"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Select
-                                            options={dialCodeList}
-                                            {...field}
-                                            className="w-full"
-                                            components={{
-                                                Option: (props) => (
-                                                    <CustomSelectOption variant="phone" {...props} />
-                                                ),
-                                                Control: CustomControl,
-                                            }}
-                                            placeholder=""
-                                            value={dialCodeList.filter(
-                                                (option) => option.dialCode === field.value
-                                            )}
-                                            onChange={(option) => field.onChange(option?.dialCode)}
-                                        />
-                                    )}
-                                />
-                            </FormItem>
-                            <FormItem
-                                className="w-full"
-                                invalid={Boolean(errors.phoneNumber) || Boolean(errors.dialCode)}
-                                errorMessage={errors.phoneNumber?.message}
-                            >
-                                <Controller
-                                    name="phoneNumber"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Input
-                                            type="text"
-                                            placeholder="(11) 3333-4444"
-                                            value={formatPhoneNumber(field.value || '')}
-                                            onChange={(e) => field.onChange(e.target.value)}
-                                            onBlur={field.onBlur}
-                                        />
-                                    )}
-                                />
-                            </FormItem>
-                        </div>
+                        <FormItem
+                            className="w-full"
+                            invalid={Boolean(errors.phoneNumber)}
+                            errorMessage={errors.phoneNumber?.message}
+                        >
+                            <Controller
+                                name="phoneNumber"
+                                control={control}
+                                render={({ field }) => (
+                                    <Input
+                                        type="text"
+                                        placeholder="(11) 3333-4444"
+                                        value={formatPhoneNumber(field.value || '')}
+                                        onChange={(e) => field.onChange(e.target.value)}
+                                        onBlur={field.onBlur}
+                                    />
+                                )}
+                            />
+                        </FormItem>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4 mb-4">

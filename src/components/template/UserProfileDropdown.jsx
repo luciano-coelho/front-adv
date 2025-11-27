@@ -38,8 +38,9 @@ const _UserDropdown = () => {
         signOut()
     }
 
+    // Sempre usar o ícone de perfil, nunca a foto
     const avatarProps = {
-        ...(avatar ? { src: avatar } : { icon: <PiUserDuotone /> }),
+        icon: <PiUserDuotone />,
     }
 
     return (
